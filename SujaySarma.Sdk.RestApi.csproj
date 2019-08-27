@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Sujay V Sarma</Authors>
+    <Company>Sujay V Sarma</Company>
+    <Description>Provides a client that can be used to call REST API methods without too much of code duplication. The library also provides three commonly found result objects - deserialized from Json.</Description>
+    <Copyright>Copyright © 2019 Sujay V. Sarma. All Rights Reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/sujayvsarma/SujaySarma-Sdk/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sujayvsarma/SujaySarma-Sdk/</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>sdk,library,http,https,rest,rest api,web service,http client</PackageTags>
+    <Version>1.0.0</Version>
+    <PackageReleaseNotes>This is version 1.0 of the library. Further improvements will be based on usage and feedback.</PackageReleaseNotes>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <CodeAnalysisRuleSet />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CodeAnalysisRuleSet />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Remove="LICENSE" />
+    <None Remove="README.md" />
+  </ItemGroup>
+
+</Project>
