@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 
 namespace SujaySarma.Sdk.RestApi
 {
@@ -210,10 +211,12 @@ namespace SujaySarma.Sdk.RestApi
                 throw new ArgumentException($"{nameof(RequestUri)} must be an absolute url with HTTP or HTTPS scheme");
             }
 
-            string finalRequestUri = RequestUri.ToString();
+            StringBuilder requestUriWithParameters = new StringBuilder();
+            requestUriWithParameters.Append(RequestUri.ToString());
             if ((QueryString != null) && (QueryString.Count > 0))
             {
-                finalRequestUri += "?";
+                requestUriWithParameters.Append("?");
+                int paramCount = 0;
                 foreach (string key in QueryString.Keys)
                 {
                     if (!key.Equals(Uri.EscapeDataString(key)))
@@ -221,17 +224,19 @@ namespace SujaySarma.Sdk.RestApi
                         throw new ArgumentException($"The query string parameter '{key}' contains illegal characters and cannot be used.");
                     }
 
-                    finalRequestUri += $"key={Uri.EscapeDataString(QueryString[key])}&";
-                }
 
-                if (finalRequestUri.EndsWith("&"))
-                {
-                    finalRequestUri = finalRequestUri.Remove(finalRequestUri.Length - 1, 1);
+                    if (paramCount > 0)
+                    {
+                        requestUriWithParameters.Append("&");
+                    }
+                    requestUriWithParameters.Append($"key={Uri.EscapeDataString(QueryString[key])}");
+
+                    paramCount++;
                 }
             }
 
             // we don't need to add the bearer header because it was added as a DefaultHeader.
-            HttpRequestMessage request = new HttpRequestMessage(method, finalRequestUri);
+            HttpRequestMessage request = new HttpRequestMessage(method, requestUriWithParameters.ToString());
 
             if (!string.IsNullOrWhiteSpace(RequestBodyString))
             {
