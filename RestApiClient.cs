@@ -16,31 +16,37 @@ namespace SujaySarma.Sdk.RestApi
         /// <summary>
         /// Instantiate the client
         /// </summary>
+        public RestApiClient()
+        {
+            BearerToken = null;
+            RequestUri = null;
+            _httpClient = new HttpClient();
+        }
+
+        /// <summary>
+        /// Instantiate the client
+        /// </summary>
         /// <param name="bearerToken">Bearer token</param>
         public RestApiClient(string bearerToken)
         {
             BearerToken = bearerToken;
 
-            rwLock.EnterUpgradeableReadLock();
-            try
+            _httpClient = new HttpClient();
+            if (!string.IsNullOrWhiteSpace(bearerToken))
             {
-                if (_httpClient == null)
-                {
-                    rwLock.EnterWriteLock();
-
-                    _httpClient = new HttpClient();
-                    if (!string.IsNullOrWhiteSpace(bearerToken))
-                    {
-                        _httpClient.DefaultRequestHeaders.Add("Bearer", bearerToken);
-                    }
-
-                    rwLock.ExitWriteLock();
-                }
+                _httpClient.DefaultRequestHeaders.Add("Bearer", bearerToken);
             }
-            finally
-            {
-                rwLock.ExitUpgradeableReadLock();
-            }
+        }
+
+        /// <summary>
+        /// Instantiate the client
+        /// </summary>
+        /// <param name="requestUri">The request Uri. Must be an absolute address</param>
+        public RestApiClient(Uri requestUri)
+        {
+            BearerToken = null;
+            RequestUri = requestUri;
+            _httpClient = new HttpClient();
         }
 
         /// <summary>
@@ -134,6 +140,11 @@ namespace SujaySarma.Sdk.RestApi
         /// </summary>
         public string BearerToken { get; private set; } = null;
 
+        /// <summary>
+        /// Request timeout in SECONDS. Defaults to 15 seconds
+        /// </summary>
+        public int RequestTimeout { get; set; } = 15;
+
         #endregion
 
         #region Methods
@@ -143,10 +154,12 @@ namespace SujaySarma.Sdk.RestApi
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <param name="method">Http Method to use</param>
+        /// <param name="contentType">The content type</param>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage CallApiMethod(HttpMethod method)
+        public HttpResponseMessage CallApiMethod(HttpMethod method, string contentType = JsonType)
         {
-            return _httpClient.SendAsync(CreateRequest(method)).Result;
+            _httpClient.Timeout = TimeSpan.FromSeconds(RequestTimeout);
+            return _httpClient.SendAsync(CreateRequest(method, contentType)).Result;
         }
 
 
@@ -203,8 +216,9 @@ namespace SujaySarma.Sdk.RestApi
         /// Create the request message
         /// </summary>
         /// <param name="method">Http Method to create request</param>
+        /// <param name="contentType">The content type</param>
         /// <returns>HttpRequestMessage</returns>
-        private HttpRequestMessage CreateRequest(HttpMethod method)
+        private HttpRequestMessage CreateRequest(HttpMethod method, string contentType = JsonType)
         {
             if ((RequestUri == null) || (!RequestUri.IsAbsoluteUri) || ((RequestUri.Scheme != "http") && (RequestUri.Scheme != "https")))
             {
@@ -235,12 +249,22 @@ namespace SujaySarma.Sdk.RestApi
                 }
             }
 
-            // we don't need to add the bearer header because it was added as a DefaultHeader.
             HttpRequestMessage request = new HttpRequestMessage(method, requestUriWithParameters.ToString());
+
+            // add headers
+            // we don't need to add the "bearer" header because it was added as a DefaultHeader.
+            if ((RequestHeaders != null) && (RequestHeaders.Count > 0))
+            {
+                foreach (string key in RequestHeaders.Keys)
+                {
+                    request.Headers.Add(key, RequestHeaders[key]);
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(RequestBodyString))
             {
-                request.Content = new StringContent(RequestBodyString, System.Text.Encoding.UTF8, JsonType);
+                request.Content = new StringContent(RequestBodyString);
+                request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
             }
 
             return request;
@@ -249,13 +273,9 @@ namespace SujaySarma.Sdk.RestApi
         #endregion
 
         private const string JsonType = "application/json";
-        private static readonly System.Threading.ReaderWriterLockSlim rwLock = new System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.NoRecursion);
 
         // WARNING! Do NOT dispose this in the destructor! 
-        private static HttpClient _httpClient;
-
-        // Destructor
-        ~RestApiClient() => rwLock.Dispose();
+        private HttpClient _httpClient;
 
     }
 }
