@@ -159,7 +159,18 @@ namespace SujaySarma.Sdk.RestApi
         public HttpResponseMessage CallApiMethod(HttpMethod method, string contentType = JsonType)
         {
             _httpClient.Timeout = TimeSpan.FromSeconds(RequestTimeout);
-            return _httpClient.SendAsync(CreateRequest(method, contentType)).Result;
+            try
+            {
+                return _httpClient.SendAsync(CreateRequest(method, contentType)).Result;
+            }
+            catch (HttpRequestException hre)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(hre.ToString()),
+                    ReasonPhrase = hre.Message
+                };
+            }
         }
 
 
@@ -243,7 +254,7 @@ namespace SujaySarma.Sdk.RestApi
                     {
                         requestUriWithParameters.Append("&");
                     }
-                    requestUriWithParameters.Append($"key={Uri.EscapeDataString(QueryString[key])}");
+                    requestUriWithParameters.Append($"{key}={Uri.EscapeDataString(QueryString[key])}");
 
                     paramCount++;
                 }
