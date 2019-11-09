@@ -163,12 +163,12 @@ namespace SujaySarma.Sdk.RestApi
             {
                 return _httpClient.SendAsync(CreateRequest(method, contentType)).Result;
             }
-            catch (HttpRequestException hre)
+            catch (Exception ex)
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
                 {
-                    Content = new StringContent(hre.ToString()),
-                    ReasonPhrase = hre.Message
+                    Content = new StringContent(ex.ToString()),
+                    ReasonPhrase = ex.Message
                 };
             }
         }
@@ -268,7 +268,10 @@ namespace SujaySarma.Sdk.RestApi
             {
                 foreach (string key in RequestHeaders.Keys)
                 {
-                    request.Headers.Add(key, RequestHeaders[key]);
+                    if (! request.Headers.Contains(key))
+                    {
+                        request.Headers.Add(key, RequestHeaders[key]);
+                    }                    
                 }
             }
 
