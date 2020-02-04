@@ -14,9 +14,9 @@
     <RepositoryUrl>https://github.com/sujayvsarma/SujaySarma.Sdk.RestApi</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>sdk,library,http,https,rest,rest api,web service,http client</PackageTags>
-    <Version>2.0.0</Version>
-    <PackageReleaseNotes>See https://github.com/sujayvsarma/SujaySarma.Sdk.RestApi/ for current information.</PackageReleaseNotes>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <Version>2.5.0</Version>
+    <PackageReleaseNotes>Better error handling. For more information, see https://github.com/sujayvsarma/SujaySarma.Sdk.RestApi/ for current information.</PackageReleaseNotes>
+    <AssemblyVersion>2.5.0.0</AssemblyVersion>
   </PropertyGroup>  
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
