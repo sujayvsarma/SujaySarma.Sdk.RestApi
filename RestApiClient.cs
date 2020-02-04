@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SujaySarma.Sdk.RestApi
 {
@@ -156,12 +157,36 @@ namespace SujaySarma.Sdk.RestApi
         /// <param name="method">Http Method to use</param>
         /// <param name="contentType">The content type</param>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage CallApiMethod(HttpMethod method, string contentType = JsonType)
+        public async Task<HttpResponseMessage> CallApiMethod(HttpMethod method, string contentType = JsonType)
         {
             _httpClient.Timeout = TimeSpan.FromSeconds(RequestTimeout);
             try
             {
-                return _httpClient.SendAsync(CreateRequest(method, contentType)).Result;
+                Task<HttpResponseMessage> response = _httpClient.SendAsync(CreateRequest(method, contentType));
+                await response;
+
+                if (response.IsCanceled)
+                {
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        Content = new StringContent("Remote server terminated the connection."),
+                        ReasonPhrase = "Remote server terminated the connection."
+                    };
+                }
+
+                if (response.IsFaulted)
+                {
+                    Exception exception = response.Exception.InnerException ?? response.Exception;
+
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        Content = new StringContent(exception.ToString()),
+                        ReasonPhrase = exception.Message
+                    };
+                }
+
+                return response.Result;
+                //return _httpClient.SendAsync(CreateRequest(method, contentType)).Result;
             }
             catch (Exception ex)
             {
@@ -179,49 +204,49 @@ namespace SujaySarma.Sdk.RestApi
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage Get() => CallApiMethod(HttpMethod.Get);
+        public HttpResponseMessage Get() => CallApiMethod(HttpMethod.Get).Result;
 
         /// <summary>
         /// Calls the API method with a HTTP PUT  and returns the HttpResponseMessage. Caller should instantiate an appropriate 
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage Put() => CallApiMethod(HttpMethod.Put);
+        public HttpResponseMessage Put() => CallApiMethod(HttpMethod.Put).Result;
 
         /// <summary>
         /// Calls the API method with a HTTP PATCH  and returns the HttpResponseMessage. Caller should instantiate an appropriate 
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage Patch() => CallApiMethod(HttpMethod.Patch);
+        public HttpResponseMessage Patch() => CallApiMethod(HttpMethod.Patch).Result;
 
         /// <summary>
         /// Calls the API method with a HTTP POST  and returns the HttpResponseMessage. Caller should instantiate an appropriate 
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage Post() => CallApiMethod(HttpMethod.Post);
+        public HttpResponseMessage Post() => CallApiMethod(HttpMethod.Post).Result;
 
         /// <summary>
         /// Calls the API method with a HTTP DELETE  and returns the HttpResponseMessage. Caller should instantiate an appropriate 
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage Delete() => CallApiMethod(HttpMethod.Delete);
+        public HttpResponseMessage Delete() => CallApiMethod(HttpMethod.Delete).Result;
 
         /// <summary>
         /// Calls the API method with a HTTP OPTIONS  and returns the HttpResponseMessage. Caller should instantiate an appropriate 
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage GetOptions() => CallApiMethod(HttpMethod.Options);
+        public HttpResponseMessage GetOptions() => CallApiMethod(HttpMethod.Options).Result;
 
         /// <summary>
         /// Calls the API method with a HTTP HEAD  and returns the HttpResponseMessage. Caller should instantiate an appropriate 
         /// <see cref="IServiceResult"/> implementation with the result of this method.
         /// </summary>
         /// <returns>The HttpResponseMessage</returns>
-        public HttpResponseMessage GetHead() => CallApiMethod(HttpMethod.Head);
+        public HttpResponseMessage GetHead() => CallApiMethod(HttpMethod.Head).Result;
 
         /// <summary>
         /// Create the request message
