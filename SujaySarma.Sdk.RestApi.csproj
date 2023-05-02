@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<Authors>Sujay V Sarma</Authors>
+		<Company>Sujay V Sarma</Company>
+		<Description>Provides a client that can be used to call REST API methods without too much of code duplication.</Description>
+		<Copyright>Copyright © 2022 Sujay V. Sarma. All Rights Reserved.</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/sujayvsarma/SujaySarma.Sdk.RestApi</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sujayvsarma/SujaySarma.Sdk.RestApi</RepositoryUrl>
+		<RepositoryType>Git</RepositoryType>
+		<PackageTags>sdk,library,http,https,rest,rest api,web service,http client</PackageTags>
+		<Version>6.2.8</Version>
+		<PackageReleaseNotes>Minor documentation fixes. Fixed bug (#3) where trying to replace an existing bearer token with WithBearerToken() results in an exception.</PackageReleaseNotes>
+		<AssemblyVersion>6.2.8.0</AssemblyVersion>
+		<FileVersion>6.2.8.0</FileVersion>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Nullable>enable</Nullable>
+		<Title>Sujay Sarma's REST API Client</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>logo.png</PackageIcon>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+		<DebugType>embedded</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<CodeAnalysisRuleSet />
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+		<DebugType>embedded</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove=".gitignore" />
+		<None Remove="LICENSE" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\..\OneDrive - Sujay's Office\Pictures\Logos and App Assets\logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+</Project>
