@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -23,12 +22,7 @@ namespace SujaySarma.Sdk.RestApi
         /// <returns>Current instance</returns>
         public RestApiClient WithTimeout(int timeout)
         {
-            if (timeout <= 0)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            _requestTimeout = timeout;
+            RequestTimeout = timeout;
             return this;
         }
 
@@ -39,17 +33,7 @@ namespace SujaySarma.Sdk.RestApi
         /// <returns>Current instance</returns>
         public RestApiClient WithBearerToken(string bearerToken)
         {
-            if (string.IsNullOrWhiteSpace(bearerToken))
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (_httpClient.DefaultRequestHeaders.Contains("Bearer"))
-            {
-                _httpClient.DefaultRequestHeaders.Remove("Bearer");
-            }
-
-            _httpClient.DefaultRequestHeaders.Add("Bearer", bearerToken);
+            BearerToken = bearerToken;
             return this;
         }
 
@@ -60,12 +44,18 @@ namespace SujaySarma.Sdk.RestApi
         /// <returns>Current instance</returns>
         public RestApiClient WithRequestUri(Uri uri)
         {
-            if (!uri.IsAbsoluteUri)
-            {
-                throw new ArgumentException("Uri must be an absolute URL.");
-            }
+            RequestUri = uri;
+            return this;
+        }
 
-            _requestUri = uri;
+        /// <summary>
+        /// Configure the request URI
+        /// </summary>
+        /// <param name="uri">Must be an absolute URI</param>
+        /// <returns>Current instance</returns>
+        public RestApiClient WithRequestUri(string uri)
+        {
+            RequestUri = new Uri(uri, UriKind.Absolute);
             return this;
         }
 
@@ -93,7 +83,7 @@ namespace SujaySarma.Sdk.RestApi
         /// <returns>Current instance</returns>
         public RestApiClient WithParameters(Dictionary<string, string> parameters)
         {
-            foreach(string key in parameters.Keys)
+            foreach (string key in parameters.Keys)
             {
                 _queryParameters[key] = Uri.EscapeDataString(parameters[key]);
             }
@@ -184,7 +174,6 @@ namespace SujaySarma.Sdk.RestApi
             HttpRequestMessage request = new(method, requestUriWithParameters.ToString().TrimEnd('&'));
 
             // add headers
-            // we don't need to add the "bearer" header because it was added as a DefaultHeader.
             if (_headers.Count > 0)
             {
                 foreach (string key in _headers.Keys)
@@ -202,7 +191,18 @@ namespace SujaySarma.Sdk.RestApi
                 request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(_contentType ?? "application/json");
             }
 
-            _httpClient.Timeout = TimeSpan.FromSeconds(_requestTimeout);
+            HttpClient _httpClient = new HttpClient()
+            {
+                Timeout = TimeSpan.FromSeconds(_requestTimeout)
+            };
+            _httpClient.DefaultRequestHeaders.ConnectionClose = true;
+
+            // Add Bearer token if applicable
+            if (! string.IsNullOrWhiteSpace(BearerToken))
+            {
+                _httpClient.DefaultRequestHeaders.Add("Bearer", BearerToken);
+            }
+
             try
             {
                 Task<HttpResponseMessage> response = _httpClient.SendAsync(request);
@@ -220,7 +220,6 @@ namespace SujaySarma.Sdk.RestApi
                 if (response.IsFaulted)
                 {
                     _httpClient.CancelPendingRequests();
-                    _httpClient = new();
 
                     if (response.Exception != null)
                     {
@@ -321,23 +320,7 @@ namespace SujaySarma.Sdk.RestApi
         /// </summary>
         public string? BearerToken
         {
-            get
-            {
-                if (! _httpClient.DefaultRequestHeaders.TryGetValues("Bearer", out IEnumerable<string>? values))
-                {
-                    return null;
-                }
-
-                return values.First();
-            }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new ArgumentNullException();
-                }
-                _httpClient.DefaultRequestHeaders.Add("Bearer", value);
-            }
+            get; set;
         }
 
         /// <summary>
@@ -366,8 +349,6 @@ namespace SujaySarma.Sdk.RestApi
         /// </summary>
         public RestApiClient()
         {
-            _httpClient = new();
-            _httpClient.DefaultRequestHeaders.ConnectionClose = true;
         }
 
         /// <summary>
@@ -379,9 +360,8 @@ namespace SujaySarma.Sdk.RestApi
             return new RestApiClient();
         }
 
-        private HttpClient _httpClient;
         private Uri? _requestUri = null;
-        private Dictionary<string, string> _queryParameters = new(), _headers = new();
+        private Dictionary<string, string> _queryParameters = new Dictionary<string, string>(), _headers = new Dictionary<string, string>();
         private string? _body = null, _contentType = null;
         private int _requestTimeout = 15;
     }
